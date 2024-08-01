@@ -63,6 +63,18 @@ export class Game extends Scene {
 	}
 
 	update() {
+		const screenWidth = this.scale.width;
+		const screenHeight = this.scale.height;
+		const halfScreenWidth = screenWidth / 2;
+
+		const playerWidth = this.activePlayer.width;
+		const playerHeight = this.activePlayer.height;
+
+		const player1MaxX = halfScreenWidth - playerWidth;
+		const player2MinX = halfScreenWidth + playerWidth;
+		const minY = playerHeight;
+		const maxY = screenHeight - playerHeight;
+
 		// Movement control for the active player
 		this.activePlayer.setVelocity(0);
 
@@ -71,22 +83,52 @@ export class Game extends Scene {
 		const activePlayerKey =
 			this.activePlayer === this.player1 ? "player1" : "player2";
 
-		const isMirrored = this.activePlayer === this.player2;
+		if (this.activePlayer === this.player1) {
+			// Normal controls for player1
+			if (
+				this.cursors.left.isDown &&
+				this.activePlayer.x > this.activePlayer.width
+			) {
+				this.activePlayer.setVelocityX(-160);
+				isMoving = true;
+			} else if (
+				this.cursors.right.isDown &&
+				this.activePlayer.x < player1MaxX
+			) {
+				this.activePlayer.setVelocityX(160);
+				isMoving = true;
+			}
 
-		if (this.cursors.left.isDown) {
-			this.activePlayer.setVelocityX(isMirrored ? 160 : -160);
-			isMoving = true;
-		} else if (this.cursors.right.isDown) {
-			this.activePlayer.setVelocityX(isMirrored ? -160 : 160);
-			isMoving = true;
-		}
+			if (this.cursors.up.isDown && this.activePlayer.y > minY) {
+				this.activePlayer.setVelocityY(-160);
+				isMoving = true;
+			} else if (this.cursors.down.isDown && this.activePlayer.y < maxY) {
+				this.activePlayer.setVelocityY(160);
+				isMoving = true;
+			}
+		} else {
+			// Reversed controls for player2
+			if (
+				this.cursors.left.isDown &&
+				this.activePlayer.x < screenWidth - this.activePlayer.width
+			) {
+				this.activePlayer.setVelocityX(160);
+				isMoving = true;
+			} else if (
+				this.cursors.right.isDown &&
+				this.activePlayer.x > player2MinX
+			) {
+				this.activePlayer.setVelocityX(-160);
+				isMoving = true;
+			}
 
-		if (this.cursors.up.isDown) {
-			this.activePlayer.setVelocityY(isMirrored ? 160 : -160);
-			isMoving = true;
-		} else if (this.cursors.down.isDown) {
-			this.activePlayer.setVelocityY(isMirrored ? -160 : 160);
-			isMoving = true;
+			if (this.cursors.up.isDown && this.activePlayer.y < maxY) {
+				this.activePlayer.setVelocityY(160);
+				isMoving = true;
+			} else if (this.cursors.down.isDown && this.activePlayer.y > minY) {
+				this.activePlayer.setVelocityY(-160);
+				isMoving = true;
+			}
 		}
 
 		// Play walking animation if moving, otherwise play idle
