@@ -9,14 +9,15 @@ export class Game extends Scene {
 	activePlayer: Phaser.Physics.Arcade.Sprite;
 	cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 	switchKey: Phaser.Input.Keyboard.Key;
+	inactiveOverlay: Phaser.GameObjects.Graphics;
 
 	constructor() {
 		super("Game");
 	}
 
-	createPlayerAnimations(spriteSheetKey: string, animBaseKey: string) {
+	createPlayerAnimations(spriteSheetKey: string) {
 		this.anims.create({
-			key: `${animBaseKey}_walk`,
+			key: `${spriteSheetKey}_walk`,
 			frames: this.anims.generateFrameNumbers(spriteSheetKey, {
 				start: 4,
 				end: 9,
@@ -26,7 +27,7 @@ export class Game extends Scene {
 		});
 
 		this.anims.create({
-			key: `${animBaseKey}_idle`,
+			key: `${spriteSheetKey}_idle`,
 			frames: this.anims.generateFrameNumbers(spriteSheetKey, {
 				start: 0,
 				end: 3,
@@ -34,6 +35,31 @@ export class Game extends Scene {
 			frameRate: 10,
 			repeat: -1,
 		});
+	}
+
+	updateInactiveOverlay() {
+		this.inactiveOverlay.clear();
+
+		const inactivePlayer =
+			this.activePlayer === this.player1 ? this.player2 : this.player1;
+
+		this.inactiveOverlay.fillStyle(0x000000, 0.2);
+
+		// Draw overlay over the inactive player's half
+		const screenWidth = this.scale.width;
+		const screenHeight = this.scale.height;
+		const halfScreenWidth = screenWidth / 2;
+
+		if (inactivePlayer === this.player1) {
+			this.inactiveOverlay.fillRect(0, 0, halfScreenWidth, screenHeight);
+		} else {
+			this.inactiveOverlay.fillRect(
+				halfScreenWidth,
+				0,
+				halfScreenWidth,
+				screenHeight
+			);
+		}
 	}
 
 	create() {
@@ -55,11 +81,14 @@ export class Game extends Scene {
 			Phaser.Input.Keyboard.KeyCodes.SPACE
 		);
 
-		this.createPlayerAnimations("player1", "player1");
-		this.createPlayerAnimations("player2", "player2");
+		this.createPlayerAnimations("player1");
+		this.createPlayerAnimations("player2");
 
 		this.player1.anims.play("player1_idle");
 		this.player2.anims.play("player2_idle");
+
+		this.inactiveOverlay = this.add.graphics();
+		this.updateInactiveOverlay();
 	}
 
 	update() {
@@ -89,21 +118,21 @@ export class Game extends Scene {
 				this.cursors.left.isDown &&
 				this.activePlayer.x > this.activePlayer.width
 			) {
-				this.activePlayer.setVelocityX(-160);
+				this.activePlayer.setVelocityX(-200);
 				isMoving = true;
 			} else if (
 				this.cursors.right.isDown &&
 				this.activePlayer.x < player1MaxX
 			) {
-				this.activePlayer.setVelocityX(160);
+				this.activePlayer.setVelocityX(200);
 				isMoving = true;
 			}
 
 			if (this.cursors.up.isDown && this.activePlayer.y > minY) {
-				this.activePlayer.setVelocityY(-160);
+				this.activePlayer.setVelocityY(-200);
 				isMoving = true;
 			} else if (this.cursors.down.isDown && this.activePlayer.y < maxY) {
-				this.activePlayer.setVelocityY(160);
+				this.activePlayer.setVelocityY(200);
 				isMoving = true;
 			}
 		} else {
@@ -112,21 +141,21 @@ export class Game extends Scene {
 				this.cursors.left.isDown &&
 				this.activePlayer.x < screenWidth - this.activePlayer.width
 			) {
-				this.activePlayer.setVelocityX(160);
+				this.activePlayer.setVelocityX(200);
 				isMoving = true;
 			} else if (
 				this.cursors.right.isDown &&
 				this.activePlayer.x > player2MinX
 			) {
-				this.activePlayer.setVelocityX(-160);
+				this.activePlayer.setVelocityX(-200);
 				isMoving = true;
 			}
 
 			if (this.cursors.up.isDown && this.activePlayer.y < maxY) {
-				this.activePlayer.setVelocityY(160);
+				this.activePlayer.setVelocityY(200);
 				isMoving = true;
 			} else if (this.cursors.down.isDown && this.activePlayer.y > minY) {
-				this.activePlayer.setVelocityY(-160);
+				this.activePlayer.setVelocityY(-200);
 				isMoving = true;
 			}
 		}
@@ -156,6 +185,8 @@ export class Game extends Scene {
 
 			this.activePlayer =
 				this.activePlayer === this.player1 ? this.player2 : this.player1;
+
+			this.updateInactiveOverlay();
 		}
 	}
 }
