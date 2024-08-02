@@ -28,6 +28,9 @@ export class Preloader extends Scene {
 		this.load.image("logo", "logo.png");
 		this.load.image("particle", "particle.png");
 
+		// Keyboard keys by beamedeighth - https://beamedeighth.itch.io/simplekeys-animated-pixel-keyboard-keys
+		this.load.image("instructions", "instructions.png");
+
 		// Hearts by VampireGirl - https://fliflifly.itch.io/hearts-and-health-bar
 		this.load.spritesheet("hearts", "heart-animated-1.png", {
 			frameWidth: 17,
@@ -58,6 +61,6 @@ export class Preloader extends Scene {
 
 		//  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
 		// this.scene.start("MainMenu");
-		this.scene.start("Game");
+		this.scene.start("MainMenu");
 	}
 }
