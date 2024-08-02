@@ -25,6 +25,9 @@ export class Preloader extends Scene {
 	preload() {
 		this.load.setPath("assets");
 
+		// Music by vubeo456
+		this.load.audio("music", ["vu-dino-dash-105bpm.mp3"]);
+
 		this.load.image("logo", "logo.png");
 		this.load.image("particle", "particle.png");
 
@@ -61,6 +64,10 @@ export class Preloader extends Scene {
 
 		//  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
 		// this.scene.start("MainMenu");
+
+		const music = this.sound.add("music");
+		music.play();
+
 		this.scene.start("MainMenu");
 	}
 }
