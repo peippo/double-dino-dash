@@ -27,6 +27,12 @@ export class Preloader extends Scene {
 
 		this.load.image("logo", "logo.png");
 
+		// Hearts by VampireGirl - https://fliflifly.itch.io/hearts-and-health-bar
+		this.load.spritesheet("hearts", "heart-animated-1.png", {
+			frameWidth: 17,
+			frameHeight: 17,
+		});
+
 		// Meteorites by Daniel Kole - https://dkproductions.itch.io/pixel-art-package-asteroids
 		this.load.image("meteorite1", "meteorite1.png");
 		this.load.image("meteorite2", "meteorite2.png");

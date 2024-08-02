@@ -12,6 +12,7 @@ export class Game extends Scene {
 	inactiveOverlay: Phaser.GameObjects.Graphics;
 	meteoritesGroup: Phaser.Physics.Arcade.Group;
 	playerLives: number;
+	livesDisplay: Phaser.GameObjects.Group;
 
 	constructor() {
 		super("Game");
@@ -47,6 +48,28 @@ export class Game extends Scene {
 
 		this.player1.anims.play("player1_idle");
 		this.player2.anims.play("player2_idle");
+
+		this.anims.create({
+			key: "heart_full",
+			frames: [{ key: "hearts", frame: 1 }],
+		});
+
+		this.anims.create({
+			key: "heart_loss",
+			frames: this.anims.generateFrameNumbers("hearts", {
+				start: 2,
+				end: 4,
+			}),
+			frameRate: 10,
+			repeat: 0,
+		});
+
+		this.anims.create({
+			key: "heart_empty",
+			frames: [{ key: "hearts", frame: 4 }],
+		});
+
+		this.createLifeDisplay();
 
 		this.inactiveOverlay = this.add.graphics();
 		this.updateInactiveOverlay();
@@ -230,6 +253,23 @@ export class Game extends Scene {
 		});
 	}
 
+	createLifeDisplay() {
+		this.livesDisplay = this.add.group({
+			key: "life",
+			repeat: 2,
+			setXY: { x: this.scale.width / 2 - 50, y: 50, stepX: 50 },
+		});
+
+		this.livesDisplay.children.iterate((heart) => {
+			let heartSprite = heart as Phaser.GameObjects.Sprite;
+
+			heartSprite.setScale(2);
+			heartSprite.play("heart_full");
+
+			return null;
+		});
+	}
+
 	updateInactiveOverlay() {
 		this.inactiveOverlay.clear();
 
@@ -324,7 +364,19 @@ export class Game extends Scene {
 		}
 	}
 
-	updateLivesDisplay(lives: number) {
-		console.log("lives: ", lives);
+	updateLivesDisplay(currentLives: number) {
+		let hearts = this.livesDisplay.getChildren();
+
+		hearts.forEach((heart, index) => {
+			let heartSprite = heart as Phaser.GameObjects.Sprite;
+
+			if (index < currentLives) {
+				heartSprite.play("heart_full");
+			} else if (index === currentLives && this.playerLives >= 0) {
+				heartSprite.play("heart_loss");
+			} else {
+				heartSprite.play("heart_empty");
+			}
+		});
 	}
 }
