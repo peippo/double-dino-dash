@@ -26,6 +26,7 @@ export class Preloader extends Scene {
 		this.load.setPath("assets");
 
 		this.load.image("logo", "logo.png");
+		this.load.image("particle", "particle.png");
 
 		// Hearts by VampireGirl - https://fliflifly.itch.io/hearts-and-health-bar
 		this.load.spritesheet("hearts", "heart-animated-1.png", {

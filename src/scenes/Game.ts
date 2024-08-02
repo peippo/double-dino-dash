@@ -13,6 +13,7 @@ export class Game extends Scene {
 	meteoritesGroup: Phaser.Physics.Arcade.Group;
 	playerLives: number;
 	livesDisplay: Phaser.GameObjects.Group;
+	particleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
 
 	constructor() {
 		super("Game");
@@ -75,7 +76,10 @@ export class Game extends Scene {
 		this.updateInactiveOverlay();
 
 		// Meteorites
-		this.meteoritesGroup = this.physics.add.group();
+		this.meteoritesGroup = this.physics.add.group({
+			bounceX: 0.5,
+			bounceY: 0.5,
+		});
 
 		this.time.addEvent({
 			delay: 1250,
@@ -99,6 +103,24 @@ export class Game extends Scene {
 			null,
 			this
 		);
+
+		this.physics.add.collider(
+			this.meteoritesGroup,
+			this.meteoritesGroup,
+			this.handleMeteoroidCollision,
+			undefined,
+			this
+		);
+
+		this.particleEmitter = this.add.particles(0, 0, "particle", {
+			speed: { min: -200, max: 200 },
+			scale: { start: 0.5, end: 0 },
+			lifespan: 500,
+			gravityY: 200,
+			rotate: { start: 0, end: 360 },
+			blendMode: "ADD",
+			emitting: false,
+		});
 	}
 
 	update() {
@@ -362,6 +384,16 @@ export class Game extends Scene {
 		if (this.playerLives <= 0) {
 			// TODO: end game
 		}
+	}
+
+	handleMeteoroidCollision(
+		meteorite1: Phaser.Physics.Arcade.Sprite,
+		meteorite2: Phaser.Physics.Arcade.Sprite
+	) {
+		const x = (meteorite1.x + meteorite2.x) / 2;
+		const y = (meteorite1.y + meteorite2.y) / 2;
+
+		this.particleEmitter.emitParticleAt(x, y, 20);
 	}
 
 	updateLivesDisplay(currentLives: number) {
