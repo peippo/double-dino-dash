@@ -40,14 +40,14 @@ export class Preloader extends Scene {
 			frameHeight: 17,
 		});
 
-		// Meteorites by Daniel Kole - https://dkproductions.itch.io/pixel-art-package-asteroids
+		// Meteorites by Daniel Kole Productions - https://dkproductions.itch.io/pixel-art-package-asteroids
 		this.load.image("meteorite1", "meteorite1.png");
 		this.load.image("meteorite2", "meteorite2.png");
 		this.load.image("meteorite3", "meteorite3.png");
 		this.load.image("meteorite4", "meteorite4.png");
 		this.load.image("meteorite5", "meteorite5.png");
 
-		// Dino by Arks - https://arks.itch.io/dino-characters
+		// Dino by @ScissorMarks - https://arks.itch.io/dino-characters
 		this.load.spritesheet("player1", "dino-yellow.png", {
 			frameWidth: 24,
 			frameHeight: 24,

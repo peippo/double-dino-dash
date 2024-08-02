@@ -47,7 +47,21 @@ export class MainMenu extends Scene {
 
 		this.instructions = this.add.image(510, 600, "instructions");
 
-		this.input.keyboard.once("keydown-SPACE", () => {
+		this.title = this.add
+			.text(
+				512,
+				730,
+				"MUSIC vubeo456 / DINO SPRITES @ScissorMarks / METEORITE SPRITES Daniel Kole Productions / CODE & DESIGN peippo",
+				{
+					fontFamily: "sans-serif",
+					fontSize: 13,
+					color: "#000",
+					align: "center",
+				}
+			)
+			.setOrigin(0.5);
+
+		this.input.keyboard?.once("keydown-SPACE", () => {
 			this.scene.start("Game");
 		});
 	}
