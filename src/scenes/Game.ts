@@ -10,6 +10,7 @@ export class Game extends Scene {
 	cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 	switchKey: Phaser.Input.Keyboard.Key;
 	inactiveOverlay: Phaser.GameObjects.Graphics;
+	meteoritesGroup: Phaser.Physics.Arcade.Group;
 
 	constructor() {
 		super("Game");
@@ -42,6 +43,16 @@ export class Game extends Scene {
 
 		this.inactiveOverlay = this.add.graphics();
 		this.updateInactiveOverlay();
+
+		// Meteorites
+		this.meteoritesGroup = this.physics.add.group();
+
+		this.time.addEvent({
+			delay: 1000,
+			callback: this.spawnMeteorites,
+			callbackScope: this,
+			loop: true,
+		});
 	}
 
 	update() {
@@ -151,6 +162,15 @@ export class Game extends Scene {
 
 			this.updateInactiveOverlay();
 		}
+
+		this.meteoritesGroup.children.iterate((meteorite) => {
+			if (meteorite) {
+				// Custom logic for each meteorite
+				this.updateMeteorite(meteorite as Phaser.Physics.Arcade.Sprite);
+			}
+
+			return null;
+		});
 	}
 
 	createPlayerAnimations(spriteSheetKey: string) {
@@ -197,6 +217,40 @@ export class Game extends Scene {
 				halfScreenWidth,
 				screenHeight
 			);
+		}
+	}
+
+	spawnMeteorites() {
+		const screenWidth = this.scale.width;
+
+		// Random position and velocity for the left side meteorite
+		const startX = Phaser.Math.Between(0, screenWidth / 2);
+		const startY = 0;
+		const velocityX = Phaser.Math.Between(-100, 100);
+		const velocityY = 100;
+
+		const meteoriteLeft = this.meteoritesGroup.create(
+			startX,
+			startY,
+			`meteorite${Phaser.Math.Between(1, 5)}`
+		);
+		meteoriteLeft.setVelocity(velocityX, velocityY);
+		meteoriteLeft.setScale(0.3);
+
+		// Create mirrored right side meteorite
+		const mirrorX = screenWidth - startX;
+		const meteoriteRight = this.meteoritesGroup.create(
+			mirrorX,
+			startY,
+			`meteorite${Phaser.Math.Between(1, 5)}`
+		);
+		meteoriteRight.setVelocity(-velocityX, velocityY);
+		meteoriteRight.setScale(0.3);
+	}
+
+	updateMeteorite(meteorite: Phaser.Physics.Arcade.Sprite) {
+		if (meteorite.y > this.scale.height) {
+			meteorite.destroy();
 		}
 	}
 }
