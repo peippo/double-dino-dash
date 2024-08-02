@@ -15,53 +15,6 @@ export class Game extends Scene {
 		super("Game");
 	}
 
-	createPlayerAnimations(spriteSheetKey: string) {
-		this.anims.create({
-			key: `${spriteSheetKey}_walk`,
-			frames: this.anims.generateFrameNumbers(spriteSheetKey, {
-				start: 4,
-				end: 9,
-			}),
-			frameRate: 20,
-			repeat: -1,
-		});
-
-		this.anims.create({
-			key: `${spriteSheetKey}_idle`,
-			frames: this.anims.generateFrameNumbers(spriteSheetKey, {
-				start: 0,
-				end: 3,
-			}),
-			frameRate: 10,
-			repeat: -1,
-		});
-	}
-
-	updateInactiveOverlay() {
-		this.inactiveOverlay.clear();
-
-		const inactivePlayer =
-			this.activePlayer === this.player1 ? this.player2 : this.player1;
-
-		this.inactiveOverlay.fillStyle(0x000000, 0.2);
-
-		// Draw overlay over the inactive player's half
-		const screenWidth = this.scale.width;
-		const screenHeight = this.scale.height;
-		const halfScreenWidth = screenWidth / 2;
-
-		if (inactivePlayer === this.player1) {
-			this.inactiveOverlay.fillRect(0, 0, halfScreenWidth, screenHeight);
-		} else {
-			this.inactiveOverlay.fillRect(
-				halfScreenWidth,
-				0,
-				halfScreenWidth,
-				screenHeight
-			);
-		}
-	}
-
 	create() {
 		this.camera = this.cameras.main;
 		this.camera.setBackgroundColor(0x00ff00);
@@ -108,18 +61,19 @@ export class Game extends Scene {
 		this.activePlayer.setVelocity(0);
 
 		let isMoving = false;
+		let isMovingLeft = false;
 
 		const activePlayerKey =
 			this.activePlayer === this.player1 ? "player1" : "player2";
 
 		if (this.activePlayer === this.player1) {
 			// Normal controls for player1
-			if (
-				this.cursors.left.isDown &&
-				this.activePlayer.x > this.activePlayer.width
-			) {
-				this.activePlayer.setVelocityX(-200);
-				isMoving = true;
+			if (this.cursors.left.isDown) {
+				isMovingLeft = true;
+				if (this.activePlayer.x > this.activePlayer.width) {
+					this.activePlayer.setVelocityX(-200);
+					isMoving = true;
+				}
 			} else if (
 				this.cursors.right.isDown &&
 				this.activePlayer.x < player1MaxX
@@ -143,12 +97,13 @@ export class Game extends Scene {
 			) {
 				this.activePlayer.setVelocityX(200);
 				isMoving = true;
-			} else if (
-				this.cursors.right.isDown &&
-				this.activePlayer.x > player2MinX
-			) {
-				this.activePlayer.setVelocityX(-200);
-				isMoving = true;
+			} else if (this.cursors.right.isDown) {
+				isMovingLeft = true;
+
+				if (this.activePlayer.x > player2MinX) {
+					this.activePlayer.setVelocityX(-200);
+					isMoving = true;
+				}
 			}
 
 			if (this.cursors.up.isDown && this.activePlayer.y < maxY) {
@@ -157,6 +112,14 @@ export class Game extends Scene {
 			} else if (this.cursors.down.isDown && this.activePlayer.y > minY) {
 				this.activePlayer.setVelocityY(-200);
 				isMoving = true;
+			}
+		}
+
+		if (isMoving) {
+			if (isMovingLeft) {
+				this.activePlayer.flipX = true;
+			} else {
+				this.activePlayer.flipX = false;
 			}
 		}
 
@@ -187,6 +150,53 @@ export class Game extends Scene {
 				this.activePlayer === this.player1 ? this.player2 : this.player1;
 
 			this.updateInactiveOverlay();
+		}
+	}
+
+	createPlayerAnimations(spriteSheetKey: string) {
+		this.anims.create({
+			key: `${spriteSheetKey}_walk`,
+			frames: this.anims.generateFrameNumbers(spriteSheetKey, {
+				start: 4,
+				end: 9,
+			}),
+			frameRate: 20,
+			repeat: -1,
+		});
+
+		this.anims.create({
+			key: `${spriteSheetKey}_idle`,
+			frames: this.anims.generateFrameNumbers(spriteSheetKey, {
+				start: 0,
+				end: 3,
+			}),
+			frameRate: 10,
+			repeat: -1,
+		});
+	}
+
+	updateInactiveOverlay() {
+		this.inactiveOverlay.clear();
+
+		const inactivePlayer =
+			this.activePlayer === this.player1 ? this.player2 : this.player1;
+
+		this.inactiveOverlay.fillStyle(0x000000, 0.2);
+
+		// Draw overlay over the inactive player's half
+		const screenWidth = this.scale.width;
+		const screenHeight = this.scale.height;
+		const halfScreenWidth = screenWidth / 2;
+
+		if (inactivePlayer === this.player1) {
+			this.inactiveOverlay.fillRect(0, 0, halfScreenWidth, screenHeight);
+		} else {
+			this.inactiveOverlay.fillRect(
+				halfScreenWidth,
+				0,
+				halfScreenWidth,
+				screenHeight
+			);
 		}
 	}
 }
