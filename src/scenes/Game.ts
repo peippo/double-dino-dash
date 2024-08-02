@@ -11,9 +11,11 @@ export class Game extends Scene {
 	switchKey: Phaser.Input.Keyboard.Key;
 	inactiveOverlay: Phaser.GameObjects.Graphics;
 	meteoritesGroup: Phaser.Physics.Arcade.Group;
+	playerLives: number;
 
 	constructor() {
 		super("Game");
+		this.playerLives = 3;
 	}
 
 	create() {
@@ -25,8 +27,13 @@ export class Game extends Scene {
 
 		this.player1 = this.physics.add.sprite(200, 300, "player1");
 		this.player1.setScale(2);
+		this.player1.body?.setSize(16, 18);
+		this.player1.body?.setOffset(4, 4);
 		this.player2 = this.physics.add.sprite(600, 300, "player2");
 		this.player2.setScale(2);
+		this.player2.body?.setSize(16, 18);
+		this.player2.body?.setOffset(4, 3);
+		this.player2.flipY = true;
 
 		this.activePlayer = this.player1;
 
@@ -48,11 +55,27 @@ export class Game extends Scene {
 		this.meteoritesGroup = this.physics.add.group();
 
 		this.time.addEvent({
-			delay: 1000,
+			delay: 1250,
 			callback: this.spawnMeteorites,
 			callbackScope: this,
 			loop: true,
 		});
+
+		this.physics.add.overlap(
+			this.player1,
+			this.meteoritesGroup,
+			this.handlePlayerHit,
+			null,
+			this
+		);
+
+		this.physics.add.overlap(
+			this.player2,
+			this.meteoritesGroup,
+			this.handlePlayerHit,
+			null,
+			this
+		);
 	}
 
 	update() {
@@ -138,15 +161,19 @@ export class Game extends Scene {
 		if (isMoving) {
 			if (
 				!this.activePlayer.anims.isPlaying ||
-				this.activePlayer.anims.currentAnim?.key !==
-					`${activePlayerKey}_walk`
+				(this.activePlayer.anims.currentAnim?.key !==
+					`${activePlayerKey}_walk` &&
+					this.activePlayer.anims.currentAnim?.key !==
+						`${activePlayerKey}_hit`)
 			) {
 				this.activePlayer.anims.play(`${activePlayerKey}_walk`);
 			}
 		} else {
 			if (
 				this.activePlayer.anims.currentAnim?.key !==
-				`${activePlayerKey}_idle`
+					`${activePlayerKey}_idle` &&
+				this.activePlayer.anims.currentAnim?.key !==
+					`${activePlayerKey}_hit`
 			) {
 				this.activePlayer.anims.play(`${activePlayerKey}_idle`);
 			}
@@ -165,7 +192,6 @@ export class Game extends Scene {
 
 		this.meteoritesGroup.children.iterate((meteorite) => {
 			if (meteorite) {
-				// Custom logic for each meteorite
 				this.updateMeteorite(meteorite as Phaser.Physics.Arcade.Sprite);
 			}
 
@@ -192,6 +218,15 @@ export class Game extends Scene {
 			}),
 			frameRate: 10,
 			repeat: -1,
+		});
+
+		this.anims.create({
+			key: `${spriteSheetKey}_hit`,
+			frames: this.anims.generateFrameNumbers(spriteSheetKey, {
+				start: 13,
+				end: 16,
+			}),
+			frameRate: 10,
 		});
 	}
 
@@ -227,30 +262,69 @@ export class Game extends Scene {
 		const startX = Phaser.Math.Between(0, screenWidth / 2);
 		const startY = 0;
 		const velocityX = Phaser.Math.Between(-100, 100);
-		const velocityY = 100;
+		const velocityY = Phaser.Math.Between(75, 125);
+		const angularVelocity = Phaser.Math.Between(-20, 20);
 
+		const meteoriteNum = Phaser.Math.Between(1, 5);
 		const meteoriteLeft = this.meteoritesGroup.create(
 			startX,
 			startY,
-			`meteorite${Phaser.Math.Between(1, 5)}`
+			`meteorite${meteoriteNum}`
 		);
 		meteoriteLeft.setVelocity(velocityX, velocityY);
+		meteoriteLeft.setAngularVelocity(angularVelocity);
 		meteoriteLeft.setScale(0.3);
+
+		if (meteoriteNum >= 3) {
+			meteoriteLeft.body.setSize(64, 64);
+		} else {
+			meteoriteLeft.body.setSize(192, 192);
+		}
 
 		// Create mirrored right side meteorite
 		const mirrorX = screenWidth - startX;
 		const meteoriteRight = this.meteoritesGroup.create(
 			mirrorX,
 			startY,
-			`meteorite${Phaser.Math.Between(1, 5)}`
+			`meteorite${meteoriteNum}`
 		);
 		meteoriteRight.setVelocity(-velocityX, velocityY);
+		meteoriteRight.setAngularVelocity(angularVelocity);
 		meteoriteRight.setScale(0.3);
+
+		if (meteoriteNum >= 3) {
+			meteoriteRight.body.setSize(64, 64);
+		} else {
+			meteoriteRight.body.setSize(192, 192);
+		}
 	}
 
 	updateMeteorite(meteorite: Phaser.Physics.Arcade.Sprite) {
 		if (meteorite.y > this.scale.height) {
 			meteorite.destroy();
 		}
+	}
+
+	handlePlayerHit(
+		player: Phaser.Physics.Arcade.Sprite,
+		meteorite: Phaser.Physics.Arcade.Sprite
+	) {
+		meteorite.destroy();
+		player.anims.stop();
+		player.anims.play(`${player.texture.key}_hit`);
+		player.once("animationcomplete", () => {
+			player.anims.play(`${player.texture.key}_idle`);
+		});
+
+		this.playerLives--;
+		this.updateLivesDisplay(this.playerLives);
+
+		if (this.playerLives <= 0) {
+			// TODO: end game
+		}
+	}
+
+	updateLivesDisplay(lives: number) {
+		console.log("lives: ", lives);
 	}
 }
