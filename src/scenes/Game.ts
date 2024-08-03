@@ -3,7 +3,6 @@ import { Scene } from "phaser";
 export class Game extends Scene {
 	camera: Phaser.Cameras.Scene2D.Camera;
 	background: Phaser.GameObjects.Image;
-	msg_text: Phaser.GameObjects.Text;
 	player1: Phaser.Physics.Arcade.Sprite;
 	player2: Phaser.Physics.Arcade.Sprite;
 	activePlayer: Phaser.Physics.Arcade.Sprite;
@@ -14,10 +13,15 @@ export class Game extends Scene {
 	playerLives: number;
 	livesDisplay: Phaser.GameObjects.Group;
 	particleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+	score: number;
+	scoreText: Phaser.GameObjects.Text;
+	scoreIncreaseRate: number;
 
 	constructor() {
 		super("Game");
 		this.playerLives = 3;
+		this.score = 0;
+		this.scoreIncreaseRate = 1;
 	}
 
 	create() {
@@ -121,9 +125,14 @@ export class Game extends Scene {
 			blendMode: "ADD",
 			emitting: false,
 		});
+
+		this.scoreText = this.add.text(40, 40, "Score: 0", {
+			fontSize: "24px",
+			color: "#000",
+		});
 	}
 
-	update() {
+	update(time: any, delta: any) {
 		const screenWidth = this.scale.width;
 		const screenHeight = this.scale.height;
 		const halfScreenWidth = screenWidth / 2;
@@ -242,6 +251,12 @@ export class Game extends Scene {
 
 			return null;
 		});
+
+		this.score += this.scoreIncreaseRate * delta * 0.001; // Convert ms to seconds
+		this.scoreText.setText("Score: " + Math.floor(this.score));
+
+		// Gradually increase score rate
+		this.scoreIncreaseRate += 1 * delta * 0.001;
 	}
 
 	createPlayerAnimations(spriteSheetKey: string) {
