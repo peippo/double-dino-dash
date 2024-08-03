@@ -76,10 +76,6 @@ export class Preloader extends Scene {
 		const music = this.sound.add("music");
 		music.play();
 
-		const hitSound = this.sound.add("sound-hit", { loop: false });
-		const pickupSound = this.sound.add("sound-pickup", { loop: false });
-		const gameoverSound = this.sound.add("sound-gameover", { loop: false });
-
 		this.scene.start("MainMenu");
 	}
 }
