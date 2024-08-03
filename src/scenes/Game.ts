@@ -16,12 +16,20 @@ export class Game extends Scene {
 	score: number;
 	scoreText: Phaser.GameObjects.Text;
 	scoreIncreaseRate: number;
+	spawnDelay: number;
+	minSpawnDelay: number;
+	spawnDelayDecreaseRate: number;
+	lastSpawnTime: number;
 
 	constructor() {
 		super("Game");
 		this.playerLives = 3;
 		this.score = 0;
 		this.scoreIncreaseRate = 1;
+		this.spawnDelay = 1500;
+		this.minSpawnDelay = 300;
+		this.spawnDelayDecreaseRate = 25;
+		this.lastSpawnTime = 0;
 	}
 
 	create() {
@@ -83,13 +91,6 @@ export class Game extends Scene {
 		this.meteoritesGroup = this.physics.add.group({
 			bounceX: 0.5,
 			bounceY: 0.5,
-		});
-
-		this.time.addEvent({
-			delay: 1250,
-			callback: this.spawnMeteorites,
-			callbackScope: this,
-			loop: true,
 		});
 
 		this.physics.add.overlap(
@@ -257,6 +258,16 @@ export class Game extends Scene {
 
 		// Gradually increase score rate
 		this.scoreIncreaseRate += 1 * delta * 0.001;
+
+		if (time - this.lastSpawnTime > this.spawnDelay) {
+			this.spawnMeteorites();
+			this.lastSpawnTime = time;
+			// Decrease spawn delay over time, but don't go below minSpawnDelay
+			this.spawnDelay = Math.max(
+				this.spawnDelay - this.spawnDelayDecreaseRate,
+				this.minSpawnDelay
+			);
+		}
 	}
 
 	createPlayerAnimations(spriteSheetKey: string) {
