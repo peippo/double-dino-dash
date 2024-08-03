@@ -14,6 +14,7 @@ export class Game extends Scene {
 	playerLives: number;
 	livesDisplay: Phaser.GameObjects.Group;
 	particleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+	timeOffset: number;
 
 	score: number;
 	scoreText: Phaser.GameObjects.Text;
@@ -36,6 +37,7 @@ export class Game extends Scene {
 	}
 
 	initState() {
+		this.timeOffset = 0;
 		this.playerLives = 3;
 		this.score = 0;
 		this.scoreIncreaseRate = 1;
@@ -50,6 +52,7 @@ export class Game extends Scene {
 
 	create() {
 		this.initState();
+		this.resetTimeOffset();
 
 		this.camera = this.cameras.main;
 		this.camera.setBackgroundColor(0x00ff00);
@@ -171,6 +174,8 @@ export class Game extends Scene {
 
 	update(time: any, delta: any) {
 		if (this.isGameOver) return;
+
+		const currentTime = time - this.timeOffset;
 
 		const screenWidth = this.scale.width;
 		const screenHeight = this.scale.height;
@@ -297,9 +302,12 @@ export class Game extends Scene {
 		// Gradually increase score rate
 		this.scoreIncreaseRate += 1 * delta * 0.001;
 
-		if (time - this.lastMeteoriteSpawnTime > this.meteoriteSpawnDelay) {
+		if (
+			currentTime - this.lastMeteoriteSpawnTime >
+			this.meteoriteSpawnDelay
+		) {
 			this.spawnMeteorites();
-			this.lastMeteoriteSpawnTime = time;
+			this.lastMeteoriteSpawnTime = currentTime;
 			// Decrease spawn delay over time, but don't go below minMeteoriteSpawnDelay
 			this.meteoriteSpawnDelay = Math.max(
 				this.meteoriteSpawnDelay - this.meteoriteSpawnDelayDecreaseRate,
@@ -307,9 +315,9 @@ export class Game extends Scene {
 			);
 		}
 
-		if (time - this.lastHeartSpawnTime > this.heartSpawnDelay) {
+		if (currentTime - this.lastHeartSpawnTime > this.heartSpawnDelay) {
 			this.spawnHeart();
-			this.lastHeartSpawnTime = time;
+			this.lastHeartSpawnTime = currentTime;
 		}
 	}
 
@@ -514,15 +522,12 @@ export class Game extends Scene {
 		this.isGameOver = true;
 		this.player1.alpha = 0;
 		this.player2.alpha = 0;
-		this.meteoritesGroup.setAlpha(0);
-		this.heartsGroup.setAlpha(0);
 		this.inactiveOverlay.clear();
+		this.meteoritesGroup.clear(true, true);
+		this.heartsGroup.clear(true, true);
 
 		this.camera.shake(500);
-
 		this.physics.pause();
-		this.meteoritesGroup.setVelocityX(0);
-		this.meteoritesGroup.setVelocityY(0);
 
 		const endFade = this.add.graphics();
 		endFade.fillStyle(0x000000, 1);
@@ -541,5 +546,9 @@ export class Game extends Scene {
 				});
 			},
 		});
+	}
+
+	resetTimeOffset() {
+		this.timeOffset = this.time.now;
 	}
 }
