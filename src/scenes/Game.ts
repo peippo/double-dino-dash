@@ -31,6 +31,19 @@ export class Game extends Scene {
 	heartSpawnDelay: number;
 	lastHeartSpawnTime: number;
 
+	hitSound:
+		| Phaser.Sound.HTML5AudioSound
+		| Phaser.Sound.NoAudioSound
+		| Phaser.Sound.WebAudioSound;
+	pickupSound:
+		| Phaser.Sound.HTML5AudioSound
+		| Phaser.Sound.NoAudioSound
+		| Phaser.Sound.WebAudioSound;
+	gameoverSound:
+		| Phaser.Sound.HTML5AudioSound
+		| Phaser.Sound.NoAudioSound
+		| Phaser.Sound.WebAudioSound;
+
 	constructor() {
 		super("Game");
 		this.initState();
@@ -68,7 +81,6 @@ export class Game extends Scene {
 		this.player2.setScale(2);
 		this.player2.body?.setSize(16, 18);
 		this.player2.body?.setOffset(4, 3);
-		this.player2.flipY = true;
 
 		this.activePlayer = this.player1;
 
@@ -76,6 +88,10 @@ export class Game extends Scene {
 		this.switchKey = this.input.keyboard!.addKey(
 			Phaser.Input.Keyboard.KeyCodes.SPACE
 		);
+
+		this.hitSound = this.sound.add("sound-hit", { loop: false });
+		this.pickupSound = this.sound.add("sound-pickup", { loop: false });
+		this.gameoverSound = this.sound.add("sound-gameover", { loop: false });
 
 		this.createPlayerAnimations("player1");
 		this.createPlayerAnimations("player2");
@@ -464,7 +480,9 @@ export class Game extends Scene {
 		player: Phaser.Physics.Arcade.Sprite,
 		meteorite: Phaser.Physics.Arcade.Sprite
 	) {
+		this.hitSound.play();
 		meteorite.destroy();
+		this.camera.shake(100, 0.025);
 		player.anims.stop();
 		player.anims.play(`${player.texture.key}_hit`);
 		player.once("animationcomplete", () => {
@@ -494,6 +512,7 @@ export class Game extends Scene {
 		heart: Phaser.Physics.Arcade.Sprite
 	) {
 		heart.destroy();
+		this.pickupSound.play();
 		this.lastHeartSpawnTime = this.time.now;
 
 		if (this.playerLives < 3) {
@@ -526,7 +545,8 @@ export class Game extends Scene {
 		this.meteoritesGroup.clear(true, true);
 		this.heartsGroup.clear(true, true);
 
-		this.camera.shake(500);
+		this.gameoverSound.play();
+		this.camera.shake(750, 0.1, true);
 		this.physics.pause();
 
 		const endFade = this.add.graphics();
@@ -537,7 +557,7 @@ export class Game extends Scene {
 		this.tweens.add({
 			targets: endFade,
 			alpha: 0.4,
-			duration: 500,
+			duration: 750,
 			onComplete: () => {
 				this.add.image(512, 384, "gameOverScreen");
 

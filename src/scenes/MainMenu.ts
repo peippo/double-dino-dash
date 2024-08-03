@@ -7,6 +7,10 @@ export class MainMenu extends Scene {
 	dino1: Phaser.Physics.Arcade.Sprite;
 	dino2: Phaser.Physics.Arcade.Sprite;
 	title: GameObjects.Text;
+	startSound:
+		| Phaser.Sound.HTML5AudioSound
+		| Phaser.Sound.NoAudioSound
+		| Phaser.Sound.WebAudioSound;
 
 	constructor() {
 		super("MainMenu");
@@ -21,6 +25,8 @@ export class MainMenu extends Scene {
 		this.dino1.flipX = true;
 		this.dino2.setScale(20);
 		this.logo = this.add.image(512, 350, "logo");
+
+		this.startSound = this.sound.add("sound-start", { loop: false });
 
 		this.anims.create({
 			key: "dino1",
@@ -62,6 +68,7 @@ export class MainMenu extends Scene {
 			.setOrigin(0.5);
 
 		this.input.keyboard?.once("keydown-SPACE", () => {
+			this.startSound.play();
 			this.scene.start("Game");
 		});
 	}

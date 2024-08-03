@@ -28,6 +28,12 @@ export class Preloader extends Scene {
 		// Music by vubeo456
 		this.load.audio("music", ["vu-dino-dash-105bpm.mp3"]);
 
+		// SFX by Kronbits - https://kronbits.itch.io/freesfx
+		this.load.audio("sound-start", ["start.mp3"]);
+		this.load.audio("sound-hit", ["hit.mp3"]);
+		this.load.audio("sound-pickup", ["pickup.mp3"]);
+		this.load.audio("sound-gameover", ["gameover.mp3"]);
+
 		this.load.image("logo", "logo.png");
 		this.load.image("particle", "particle.png");
 		this.load.image("gameOverScreen", "gameover.png");
@@ -69,6 +75,10 @@ export class Preloader extends Scene {
 
 		const music = this.sound.add("music");
 		music.play();
+
+		const hitSound = this.sound.add("sound-hit", { loop: false });
+		const pickupSound = this.sound.add("sound-pickup", { loop: false });
+		const gameoverSound = this.sound.add("sound-gameover", { loop: false });
 
 		this.scene.start("MainMenu");
 	}
