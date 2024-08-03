@@ -16,34 +16,45 @@ export class Game extends Scene {
 	score: number;
 	scoreText: Phaser.GameObjects.Text;
 	scoreIncreaseRate: number;
-	spawnDelay: number;
-	minSpawnDelay: number;
-	spawnDelayDecreaseRate: number;
-	lastSpawnTime: number;
+
+	isGameOver: boolean;
+	gameOverScreen: Phaser.GameObjects.Image;
+
+	meteoriteSpawnDelay: number;
+	minMeteoriteSpawnDelay: number;
+	meteoriteSpawnDelayDecreaseRate: number;
+	lastMeteoriteSpawnTime: number;
 
 	constructor() {
 		super("Game");
+		this.initState();
+	}
+
+	initState() {
 		this.playerLives = 3;
 		this.score = 0;
 		this.scoreIncreaseRate = 1;
-		this.spawnDelay = 1500;
-		this.minSpawnDelay = 300;
-		this.spawnDelayDecreaseRate = 25;
-		this.lastSpawnTime = 0;
+		this.meteoriteSpawnDelay = 1500;
+		this.minMeteoriteSpawnDelay = 300;
+		this.meteoriteSpawnDelayDecreaseRate = 25;
+		this.lastMeteoriteSpawnTime = 0;
+		this.isGameOver = false;
 	}
 
 	create() {
+		this.initState();
+
 		this.camera = this.cameras.main;
 		this.camera.setBackgroundColor(0x00ff00);
 
 		this.background = this.add.image(512, 384, "background");
 		this.background.setAlpha(0.5);
 
-		this.player1 = this.physics.add.sprite(200, 300, "player1");
+		this.player1 = this.physics.add.sprite(250, 500, "player1");
 		this.player1.setScale(2);
 		this.player1.body?.setSize(16, 18);
 		this.player1.body?.setOffset(4, 4);
-		this.player2 = this.physics.add.sprite(600, 300, "player2");
+		this.player2 = this.physics.add.sprite(780, 500, "player2");
 		this.player2.setScale(2);
 		this.player2.body?.setSize(16, 18);
 		this.player2.body?.setOffset(4, 3);
@@ -128,12 +139,15 @@ export class Game extends Scene {
 		});
 
 		this.scoreText = this.add.text(40, 40, "Score: 0", {
-			fontSize: "24px",
+			fontFamily: "sans-serif",
+			fontSize: "20px",
 			color: "#000",
 		});
 	}
 
 	update(time: any, delta: any) {
+		if (this.isGameOver) return;
+
 		const screenWidth = this.scale.width;
 		const screenHeight = this.scale.height;
 		const halfScreenWidth = screenWidth / 2;
@@ -259,13 +273,13 @@ export class Game extends Scene {
 		// Gradually increase score rate
 		this.scoreIncreaseRate += 1 * delta * 0.001;
 
-		if (time - this.lastSpawnTime > this.spawnDelay) {
+		if (time - this.lastMeteoriteSpawnTime > this.meteoriteSpawnDelay) {
 			this.spawnMeteorites();
-			this.lastSpawnTime = time;
-			// Decrease spawn delay over time, but don't go below minSpawnDelay
-			this.spawnDelay = Math.max(
-				this.spawnDelay - this.spawnDelayDecreaseRate,
-				this.minSpawnDelay
+			this.lastMeteoriteSpawnTime = time;
+			// Decrease spawn delay over time, but don't go below minMeteoriteSpawnDelay
+			this.meteoriteSpawnDelay = Math.max(
+				this.meteoriteSpawnDelay - this.meteoriteSpawnDelayDecreaseRate,
+				this.minMeteoriteSpawnDelay
 			);
 		}
 	}
@@ -408,7 +422,7 @@ export class Game extends Scene {
 		this.updateLivesDisplay(this.playerLives);
 
 		if (this.playerLives <= 0) {
-			// TODO: end game
+			this.endGame();
 		}
 	}
 
@@ -435,6 +449,38 @@ export class Game extends Scene {
 			} else {
 				heartSprite.play("heart_empty");
 			}
+		});
+	}
+
+	endGame() {
+		this.isGameOver = true;
+		this.player1.alpha = 0;
+		this.player2.alpha = 0;
+		this.meteoritesGroup.setAlpha(0);
+		this.inactiveOverlay.clear();
+
+		this.camera.shake(500);
+
+		this.physics.pause();
+		this.meteoritesGroup.setVelocityX(0);
+		this.meteoritesGroup.setVelocityY(0);
+
+		const endFade = this.add.graphics();
+		endFade.fillStyle(0x000000, 1);
+		endFade.fillRect(0, 0, this.scale.width, this.scale.height);
+		endFade.alpha = 0;
+
+		this.tweens.add({
+			targets: endFade,
+			alpha: 0.4,
+			duration: 500,
+			onComplete: () => {
+				this.add.image(512, 384, "gameOverScreen");
+
+				this.input.keyboard?.once("keydown-SPACE", () => {
+					this.scene.restart();
+				});
+			},
 		});
 	}
 }

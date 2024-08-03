@@ -30,6 +30,7 @@ export class Preloader extends Scene {
 
 		this.load.image("logo", "logo.png");
 		this.load.image("particle", "particle.png");
+		this.load.image("gameOverScreen", "gameover.png");
 
 		// Keyboard keys by beamedeighth - https://beamedeighth.itch.io/simplekeys-animated-pixel-keyboard-keys
 		this.load.image("instructions", "instructions.png");
