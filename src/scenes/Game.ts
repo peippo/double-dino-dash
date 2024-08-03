@@ -10,9 +10,11 @@ export class Game extends Scene {
 	switchKey: Phaser.Input.Keyboard.Key;
 	inactiveOverlay: Phaser.GameObjects.Graphics;
 	meteoritesGroup: Phaser.Physics.Arcade.Group;
+	heartsGroup: Phaser.Physics.Arcade.Group;
 	playerLives: number;
 	livesDisplay: Phaser.GameObjects.Group;
 	particleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+
 	score: number;
 	scoreText: Phaser.GameObjects.Text;
 	scoreIncreaseRate: number;
@@ -24,6 +26,9 @@ export class Game extends Scene {
 	minMeteoriteSpawnDelay: number;
 	meteoriteSpawnDelayDecreaseRate: number;
 	lastMeteoriteSpawnTime: number;
+
+	heartSpawnDelay: number;
+	lastHeartSpawnTime: number;
 
 	constructor() {
 		super("Game");
@@ -38,6 +43,8 @@ export class Game extends Scene {
 		this.minMeteoriteSpawnDelay = 300;
 		this.meteoriteSpawnDelayDecreaseRate = 25;
 		this.lastMeteoriteSpawnTime = 0;
+		this.heartSpawnDelay = 20000;
+		this.lastHeartSpawnTime = 0;
 		this.isGameOver = false;
 	}
 
@@ -137,6 +144,23 @@ export class Game extends Scene {
 			blendMode: "ADD",
 			emitting: false,
 		});
+
+		// Hearts pickups
+		this.heartsGroup = this.physics.add.group();
+		this.physics.add.overlap(
+			this.player1,
+			this.heartsGroup,
+			this.collectHeart,
+			null,
+			this
+		);
+		this.physics.add.overlap(
+			this.player2,
+			this.heartsGroup,
+			this.collectHeart,
+			null,
+			this
+		);
 
 		this.scoreText = this.add.text(40, 40, "Score: 0", {
 			fontFamily: "sans-serif",
@@ -282,6 +306,11 @@ export class Game extends Scene {
 				this.minMeteoriteSpawnDelay
 			);
 		}
+
+		if (time - this.lastHeartSpawnTime > this.heartSpawnDelay) {
+			this.spawnHeart();
+			this.lastHeartSpawnTime = time;
+		}
 	}
 
 	createPlayerAnimations(spriteSheetKey: string) {
@@ -401,6 +430,22 @@ export class Game extends Scene {
 		}
 	}
 
+	spawnHeart() {
+		if (this.heartsGroup.getTotalUsed() > 0) {
+			return;
+		}
+
+		const heart = this.heartsGroup.create(
+			Phaser.Math.Between(100, this.scale.width - 100),
+			Phaser.Math.Between(100, this.scale.height - 100),
+			"heart"
+		);
+
+		heart.setScale(1.5);
+		heart.setInteractive();
+		heart.setCollideWorldBounds(true);
+	}
+
 	updateMeteorite(meteorite: Phaser.Physics.Arcade.Sprite) {
 		if (meteorite.y > this.scale.height) {
 			meteorite.destroy();
@@ -436,6 +481,19 @@ export class Game extends Scene {
 		this.particleEmitter.emitParticleAt(x, y, 20);
 	}
 
+	collectHeart(
+		player: Phaser.Physics.Arcade.Sprite,
+		heart: Phaser.Physics.Arcade.Sprite
+	) {
+		heart.destroy();
+		this.lastHeartSpawnTime = this.time.now;
+
+		if (this.playerLives < 3) {
+			this.playerLives++;
+			this.updateLivesDisplay(this.playerLives);
+		}
+	}
+
 	updateLivesDisplay(currentLives: number) {
 		let hearts = this.livesDisplay.getChildren();
 
@@ -457,6 +515,7 @@ export class Game extends Scene {
 		this.player1.alpha = 0;
 		this.player2.alpha = 0;
 		this.meteoritesGroup.setAlpha(0);
+		this.heartsGroup.setAlpha(0);
 		this.inactiveOverlay.clear();
 
 		this.camera.shake(500);

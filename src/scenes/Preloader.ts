@@ -40,6 +40,7 @@ export class Preloader extends Scene {
 			frameWidth: 17,
 			frameHeight: 17,
 		});
+		this.load.image("heart", "heart-pickup.png");
 
 		// Meteorites by Daniel Kole Productions - https://dkproductions.itch.io/pixel-art-package-asteroids
 		this.load.image("meteorite1", "meteorite1.png");
